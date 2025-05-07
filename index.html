@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milk Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Milk Tracker</h1>
+            <p class="date" id="currentDate">Today's Date</p>
+        </header>
+        
+        <section class="data-section">
+            <h2>Today's Feedings</h2>
+            <div id="todayDataContainer">
+                <div class="loading">Loading today's data...</div>
+                <table id="todayTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Amount (ml)</th>
+                            <th>Type</th>
+                            <th>Boob</th>
+                        </tr>
+                    </thead>
+                    <tbody id="todayTableBody">
+                        <!-- Data will be inserted here by JavaScript -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            <td id="totalAmount">-</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+        
+        <section class="graph-section">
+            <h2>Week's Trend</h2>
+            <div id="weeklyGraphContainer">
+                <div class="loading">Loading weekly trend...</div>
+                <canvas id="weeklyTrendChart"></canvas>
+            </div>
+        </section>
+        
+        <div class="stats-container">
+            <div class="stat-box">
+                <h3>Daily Average</h3>
+                <p id="dailyAverage">-</p>
+            </div>
+            <div class="stat-box">
+                <h3>Most Recent</h3>
+                <p id="mostRecent">-</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Data refreshes automatically every 5 minutes</p>
+            <button id="refreshButton" class="refresh-btn">Refresh Now</button>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
