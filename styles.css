@@ -40,6 +40,7 @@ h2 {
     color: #3498db;
     font-size: 1.4rem;
     margin-bottom: 15px;
+    margin-right: 15px;
 }
 
 h3 {
@@ -59,6 +60,29 @@ h3 {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     padding: 15px;
     margin-bottom: 20px;
+}
+
+/* Section header with total amount */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.total-display {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    background-color: #f8f9fa;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border-left: 3px solid #3498db;
+}
+
+.total-display span {
+    color: #3498db;
+    font-weight: 700;
 }
 
 /* Table styles */
@@ -118,11 +142,26 @@ h3 {
     margin: 0 5px;
 }
 
+.stat-box h3 {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 5px;
+}
+
 .stat-box p {
     font-size: 1.3rem;
     font-weight: bold;
     color: #3498db;
-    margin-top: 10px;
+    margin-top: 5px;
+}
+
+/* Different colors for milk types */
+#totalMM {
+    color: #e74c3c; /* Red for MM */
+}
+
+#totalPRE {
+    color: #2ecc71; /* Green for PRE */
 }
 
 /* Loading indicator */
@@ -138,22 +177,6 @@ footer {
     padding: 15px 0;
     font-size: 0.8rem;
     color: #7f8c8d;
-}
-
-.refresh-btn {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-top: 5px;
-    transition: background-color 0.3s;
-}
-
-.refresh-btn:hover {
-    background-color: #2980b9;
 }
 
 /* Responsive adjustments */
