@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             row.innerHTML = `
                 <td>${timeStr}</td>
-                <td>${feeding.amount} ml</td>
+                <td>${feeding.amount}</td>
                 <td>${feeding['What Milk']}</td>
                 <td>${feeding['Boob']}</td>
             `;
@@ -122,134 +122,137 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Create a stacked bar chart
-    function createStackedChart(ctx, labels, mmData, preData, totalData, dateObjects) {
-        // Format dates for better display using the actual date objects
-        const formattedLabels = dateObjects.map(date => {
-            // Use a fixed format that works consistently across devices
-            const day = date.getDate();
-            const month = date.toLocaleString('en-US', { month: 'short' });
-            return `${day} ${month}`; // e.g. "8 May"
-        });
+function createStackedChart(ctx, labels, mmData, preData, totalData, dateObjects) {
+    // Format dates for better display using the actual date objects
+    const formattedLabels = dateObjects.map(date => {
+        // Use DD/MM format that works well on all devices
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        return `${day}/${month}`; // e.g. "08/05" for May 8th
+    });
+    
+    // Set canvas dimensions based on container with 5% wider width
+    const container = ctx.canvas.parentNode;
+    ctx.canvas.width = container.clientWidth * 1.2; // Increase width by 5%
+    ctx.canvas.height = container.clientHeight;
+    
+    // Find the maximum value for scaling
+    const maxValue = Math.max(...totalData) * 1.2; // 20% padding on top
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    
+    // Set chart padding
+    const padding = {
+        top: 20,
+        right: 20,
+        bottom: 40,
+        left: 60
+    };
+    
+    // Calculate chart area dimensions
+    const chartWidth = ctx.canvas.width - padding.left - padding.right;
+    const chartHeight = ctx.canvas.height - padding.top - padding.bottom;
+    
+    // Draw background grid
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    
+    // Horizontal grid lines
+    const numGridLines = 5;
+    for (let i = 0; i <= numGridLines; i++) {
+        const y = padding.top + chartHeight - (i / numGridLines) * chartHeight;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(padding.left + chartWidth, y);
+        ctx.stroke();
         
-        // Set canvas dimensions based on container
-        const container = ctx.canvas.parentNode;
-        ctx.canvas.width = container.clientWidth;
-        ctx.canvas.height = container.clientHeight;
+        // Add y-axis labels
+        const value = Math.round((i / numGridLines) * maxValue);
+        ctx.fillStyle = '#7f8c8d';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${value}`, padding.left - 10, y + 4);
+    }
+    
+    // Draw bars
+    // Adjust bar width based on screen size to prevent label overlapping
+    const isMobile = window.innerWidth < 768;
+    const barWidthFactor = isMobile ? 0.4 : 0.6; // Narrower bars on mobile
+    const barWidth = chartWidth / labels.length * barWidthFactor;
+    const barSpacing = chartWidth / labels.length * (1 - barWidthFactor) / 2;
+    
+    // Colors for milk types
+    const mmColor = '#e74c3c'; // Red for MM
+    const preColor = '#2ecc71'; // Green for PRE
+    
+    totalData.forEach((total, index) => {
+        const mm = mmData[index];
+        const pre = preData[index];
         
-        // Find the maximum value for scaling
-        const maxValue = Math.max(...totalData) * 1.2; // 20% padding on top
+        // Calculate heights proportional to the chart
+        const mmHeight = (mm / maxValue) * chartHeight;
+        const preHeight = (pre / maxValue) * chartHeight;
         
-        // Clear canvas
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        // Calculate positions
+        const x = padding.left + index * (barWidth + 2 * barSpacing) + barSpacing;
+        let y = padding.top + chartHeight;
         
-        // Set chart padding
-        const padding = {
-            top: 20,
-            right: 20,
-            bottom: 40,
-            left: 60
-        };
-        
-        // Calculate chart area dimensions
-        const chartWidth = ctx.canvas.width - padding.left - padding.right;
-        const chartHeight = ctx.canvas.height - padding.top - padding.bottom;
-        
-        // Draw background grid
-        ctx.strokeStyle = '#e0e0e0';
-        ctx.lineWidth = 1;
-        
-        // Horizontal grid lines
-        const numGridLines = 5;
-        for (let i = 0; i <= numGridLines; i++) {
-            const y = padding.top + chartHeight - (i / numGridLines) * chartHeight;
-            ctx.beginPath();
-            ctx.moveTo(padding.left, y);
-            ctx.lineTo(padding.left + chartWidth, y);
-            ctx.stroke();
-            
-            // Add y-axis labels
-            const value = Math.round((i / numGridLines) * maxValue);
-            ctx.fillStyle = '#7f8c8d';
-            ctx.font = '12px sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText(`${value} ml`, padding.left - 10, y + 4);
+        // Draw PRE bar (bottom part)
+        if (pre > 0) {
+            y -= preHeight;
+            ctx.fillStyle = preColor;
+            ctx.fillRect(x, y, barWidth, preHeight);
         }
         
-        // Draw bars
-        const barWidth = chartWidth / labels.length * 0.6;
-        const barSpacing = chartWidth / labels.length * 0.4 / 2;
+        // Draw MM bar (top part)
+        if (mm > 0) {
+            y -= mmHeight;
+            ctx.fillStyle = mmColor;
+            ctx.fillRect(x, y, barWidth, mmHeight);
+        }
         
-        // Colors for milk types
-        const mmColor = '#e74c3c'; // Red for MM
-        const preColor = '#2ecc71'; // Green for PRE
+        // Add total value on top of bar
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
         
-        totalData.forEach((total, index) => {
-            const mm = mmData[index];
-            const pre = preData[index];
-            
-            // Calculate heights proportional to the chart
-            const mmHeight = (mm / maxValue) * chartHeight;
-            const preHeight = (pre / maxValue) * chartHeight;
-            
-            // Calculate positions
-            const x = padding.left + index * (barWidth + 2 * barSpacing) + barSpacing;
-            let y = padding.top + chartHeight;
-            
-            // Draw PRE bar (bottom part)
-            if (pre > 0) {
-                y -= preHeight;
-                ctx.fillStyle = preColor;
-                ctx.fillRect(x, y, barWidth, preHeight);
-            }
-            
-            // Draw MM bar (top part)
-            if (mm > 0) {
-                y -= mmHeight;
-                ctx.fillStyle = mmColor;
-                ctx.fillRect(x, y, barWidth, mmHeight);
-            }
-            
-            // Add total value on top of bar
-            ctx.fillStyle = '#2c3e50';
-            ctx.font = '12px sans-serif';
-            ctx.textAlign = 'center';
-            
-            // Only show total if there is data
-            if (total > 0) {
-                ctx.fillText(total, x + barWidth / 2, y - 5);
-            }
-            
-            // Add x-axis label
-            ctx.fillStyle = '#7f8c8d';
-            ctx.textAlign = 'center';
-            ctx.fillText(formattedLabels[index], x + barWidth / 2, padding.top + chartHeight + 20);
-        });
+        // Only show total if there is data
+        if (total > 0) {
+            ctx.fillText(total, x + barWidth / 2, y - 5);
+        }
         
-        // Add legend
-        const legendY = padding.top - 5;
-        const legendSquareSize = 10;
-        
-        // MM legend
-        ctx.fillStyle = mmColor;
-        ctx.fillRect(padding.left, legendY, legendSquareSize, legendSquareSize);
-        ctx.fillStyle = '#555';
-        ctx.textAlign = 'left';
-        ctx.fillText('MM', padding.left + legendSquareSize + 5, legendY + 8);
-        
-        // PRE legend
-        const mmTextWidth = ctx.measureText('MM').width;
-        const preX = padding.left + legendSquareSize + 10 + mmTextWidth + 20;
-        ctx.fillStyle = preColor;
-        ctx.fillRect(preX, legendY, legendSquareSize, legendSquareSize);
-        ctx.fillStyle = '#555';
-        ctx.fillText('PRE', preX + legendSquareSize + 5, legendY + 8);
-        
-        return {
-            destroy: function() {
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            }
-        };
-    }
+        // Add x-axis label
+        ctx.fillStyle = '#7f8c8d';
+        ctx.textAlign = 'center';
+        ctx.fillText(formattedLabels[index], x + barWidth / 2, padding.top + chartHeight + 20);
+    });
+    
+    // Add legend
+    const legendY = padding.top - 5;
+    const legendSquareSize = 10;
+    
+    // MM legend
+    ctx.fillStyle = mmColor;
+    ctx.fillRect(padding.left, legendY, legendSquareSize, legendSquareSize);
+    ctx.fillStyle = '#555';
+    ctx.textAlign = 'left';
+    ctx.fillText('MM', padding.left + legendSquareSize + 5, legendY + 8);
+    
+    // PRE legend
+    const mmTextWidth = ctx.measureText('MM').width;
+    const preX = padding.left + legendSquareSize + 10 + mmTextWidth + 20;
+    ctx.fillStyle = preColor;
+    ctx.fillRect(preX, legendY, legendSquareSize, legendSquareSize);
+    ctx.fillStyle = '#555';
+    ctx.fillText('PRE', preX + legendSquareSize + 5, legendY + 8);
+    
+    return {
+        destroy: function() {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+    };
+}
     
     // Update statistics by milk type
     function updateStats(todayData, weeklyData) {
